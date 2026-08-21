@@ -46,7 +46,7 @@
           <div class="stage-scrim" aria-hidden="true"></div>
           <div class="stage-caption">
             <p class="world-kicker">A SMALL WORLD THAT REMEMBERS</p>
-            <h1 id="world-title">今天，它在房间里等你。</h1>
+            <h1 id="world-title">今天，它在<span class="cjk-keep">房间里</span>等你。</h1>
             <p id="world-subtitle">喂它一口饭，陪它过一天。每个动作都会留下痕迹。</p>
           </div>
           <div class="world-bubble" id="world-bubble" role="status" aria-live="polite">你好，我已经醒啦。</div>
@@ -90,6 +90,12 @@
             <button class="drawer-action" data-action="work" type="button"><span class="dock-icon icon-work" aria-hidden="true"></span><strong>打工</strong><small>赚取经验</small></button>
             <button class="drawer-action" data-action="feed" type="button"><span class="dock-icon icon-feed" aria-hidden="true"></span><strong>喂食</strong><small>降低饥饿</small></button>
             <button class="drawer-action" data-action="rest" type="button"><span class="dock-icon icon-rest" aria-hidden="true"></span><strong>休息</strong><small>恢复精力</small></button>
+            <button class="drawer-action" data-action="study" type="button"><span class="dock-icon icon-study" aria-hidden="true"></span><strong>学习</strong><small>积累知识</small></button>
+            <button class="drawer-action" data-action="groom" type="button"><span class="dock-icon icon-touch" aria-hidden="true"></span><strong>梳毛</strong><small>恢复健康</small></button>
+            <button class="drawer-action" data-action="sing" type="button"><span class="dock-icon icon-chat" aria-hidden="true"></span><strong>唱歌</strong><small>提升心情</small></button>
+            <button class="drawer-action" data-action="dance" type="button"><span class="dock-icon icon-adventure" aria-hidden="true"></span><strong>跳舞</strong><small>释放活力</small></button>
+            <button class="drawer-action" data-action="explore" type="button"><span class="dock-icon icon-bathe" aria-hidden="true"></span><strong>探索</strong><small>发现新事物</small></button>
+            <button class="drawer-action" data-action="socialize" type="button"><span class="dock-icon icon-work" aria-hidden="true"></span><strong>社交</strong><small>认识新朋友</small></button>
           </div>
         </section>
         <section class="drawer-section" aria-labelledby="skill-title">
@@ -103,6 +109,7 @@
         <section class="drawer-section presence-section" aria-labelledby="presence-title">
           <div class="section-heading"><h3 id="presence-title">它会主动回应</h3><span>隐私优先</span></div>
           <p>这里只模拟进入和微笑事件，不上传或保存摄像头画面。</p>
+          <label class="proactive-toggle"><input id="proactive-toggle" type="checkbox" checked /><span><strong>自动陪伴</strong><small>宠物会偶尔自己搭话</small></span></label>
           <div class="presence-actions"><button class="tiny-button" data-event="entered" type="button">我回来了</button><button class="tiny-button" data-event="smile" type="button">我在微笑</button></div>
           <div class="proactive-result" id="proactive-result" aria-live="polite">等待一次感知事件</div>
         </section>

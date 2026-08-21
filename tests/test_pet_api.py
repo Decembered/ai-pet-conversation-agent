@@ -41,6 +41,7 @@ def test_pet_http_api_exposes_state_actions_memory_and_skills(tmp_path) -> None:
         observe = client.post(
             "/api/pet/observe", json={"event_type": "entered", "observed_at": 100}
         )
+        proactive = client.get("/api/pet/proactive/tick", params={"pet_id": "demo"})
 
     assert state.status_code == 200
     assert state.json()["level"] == 1
@@ -51,6 +52,8 @@ def test_pet_http_api_exposes_state_actions_memory_and_skills(tmp_path) -> None:
     assert letter.json()["kind"] == "letter"
     assert letter.json()["path"].startswith("/pet-artifacts/")
     assert observe.json()["should_trigger"] is True
+    assert proactive.json()["should_trigger"] is True
+    assert proactive.json()["action"] == "nuzzle"
 
 
 def test_websocket_text_intent_updates_state_without_llm(tmp_path) -> None:

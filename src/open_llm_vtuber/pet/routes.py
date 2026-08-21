@@ -114,6 +114,10 @@ def init_pet_routes(runtime: PetRuntime) -> APIRouter:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
         return decision
 
+    @router.get("/proactive/tick")
+    async def proactive_tick(pet_id: str = "demo"):
+        return runtime.proactive_tick(pet_id)
+
     @router.get("/personas")
     async def personas():
         return list_personas()

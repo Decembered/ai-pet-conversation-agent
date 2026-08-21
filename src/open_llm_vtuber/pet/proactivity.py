@@ -3,6 +3,8 @@
 from dataclasses import dataclass
 from typing import Literal
 
+from .state import PetState
+
 PresenceEventType = Literal["entered", "left", "smile", "idle"]
 
 
@@ -28,7 +30,8 @@ class ProactiveScheduler:
 
     def __init__(self, cooldown_seconds: float = 300.0) -> None:
         self.cooldown_seconds = cooldown_seconds
-        self._last_trigger_at: dict[PresenceEventType, float] = {}
+        self.tick_cooldown_seconds = 90.0
+        self._last_trigger_at: dict[str, float] = {}
 
     def evaluate(self, event: PresenceEvent) -> ProactiveDecision:
         """Turn a presence event into a cooldown-aware action decision."""
@@ -47,4 +50,25 @@ class ProactiveScheduler:
         }
         message, action = messages[event.event_type]
         self._last_trigger_at[event.event_type] = event.observed_at
+        return ProactiveDecision(True, message, action)
+
+    def evaluate_tick(
+        self, state: PetState, observed_at: float
+    ) -> ProactiveDecision:
+        last_trigger = self._last_trigger_at.get("tick")
+        if (
+            last_trigger is not None
+            and observed_at - last_trigger < self.tick_cooldown_seconds
+        ):
+            return ProactiveDecision(False, "")
+
+        if state.hunger >= 70:
+            message, action = "我肚子有点空啦，要不要给我准备点吃的？", "feed"
+        elif state.energy <= 35:
+            message, action = "我有点困了，陪我一起歇一会儿好吗？", "rest"
+        elif state.mood <= 45:
+            message, action = "房间有点安静，我想和你玩一小会儿。", "play"
+        else:
+            message, action = "我刚刚看了一眼窗外，发现你还在这里。", "nuzzle"
+        self._last_trigger_at["tick"] = observed_at
         return ProactiveDecision(True, message, action)

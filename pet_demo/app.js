@@ -31,6 +31,16 @@ const actionCopy = {
   play: "摸摸一下，开心能量 +1",
   feed: "给它准备一口热乎乎的饭",
   adventure: "一起出发，去房间外探险",
+  bathe: "给它洗一个泡泡澡",
+  rest: "让它在窗边充充电",
+  study: "陪它学一点新知识",
+  work: "它去完成今天的小工作",
+  groom: "帮它把毛毛梳得蓬松整齐",
+  sing: "听它唱一段专属小歌",
+  dance: "给它一个小舞台，让它跳起来",
+  explore: "陪它在房间里找新发现",
+  socialize: "听它分享刚刚认识的新朋友",
+  nuzzle: "它自己凑过来，想和你待一会儿",
   chat: "我在听，你慢慢说",
 };
 
@@ -38,12 +48,27 @@ const actionMotion = {
   play: { index: 0, expression: "exp_01" },
   feed: { index: 1, expression: "exp_02" },
   adventure: { index: 2, expression: "exp_05" },
+  bathe: { index: 0, expression: "exp_04" },
+  rest: { index: 1, expression: "exp_03" },
+  study: { index: 2, expression: "exp_01" },
+  work: { index: 3, expression: "exp_02" },
+  groom: { index: 0, expression: "exp_02" },
+  sing: { index: 1, expression: "exp_05" },
+  dance: { index: 2, expression: "exp_01" },
+  explore: { index: 3, expression: "exp_04" },
+  socialize: { index: 0, expression: "exp_03" },
+  nuzzle: { index: 0, expression: "exp_03" },
+  wave: { index: 0, expression: "exp_01" },
+  happy: { index: 1, expression: "exp_05" },
   chat: { index: 3, expression: "exp_03" },
 };
 
 const staticDemo = window.location.hostname.endsWith("github.io")
   || new URLSearchParams(window.location.search).has("static");
+stage.dataset.staticDemo = String(staticDemo);
 const staticStateKey = "slai-pet-world-static-state-v1";
+const proactiveEnabledKey = "slai-pet-world-proactive-enabled-v1";
+const staticProactiveKey = "slai-pet-world-static-proactive-v1";
 const staticPersonas = [{ persona_id: "sunny", display_name: "小太阳" }];
 const staticInitialState = {
   pet_id: petId,
@@ -89,6 +114,11 @@ function staticAction(action) {
     study: [4, -12, 0, 2, 0, 25, "学到新东西啦，变聪明一点点！"],
     work: [8, -20, 0, 1, 1, 30, "工作完成，今天也有小小收获！"],
     adventure: [10, -25, 0, 8, 2, 35, "冒险回来啦，发现了闪闪发光的经验！"],
+    groom: [0, -2, 5, 7, 2, 8, "梳完毛毛，整只宠物都蓬松起来啦！"],
+    sing: [0, -5, 0, 12, 2, 12, "唱完一小段，房间里都是亮晶晶的回声！"],
+    dance: [0, -12, 0, 15, 3, 18, "跳舞完成！我是不是越来越有舞台感啦？"],
+    explore: [6, -15, 0, 10, 2, 22, "探索了一圈，窗边藏着一颗新发现的星星！"],
+    socialize: [0, -10, 0, 8, 4, 18, "和邻居们聊了会儿，回来第一时间和你分享！"],
   };
   const [hunger, energy, health, mood, intimacy, reward, message] = changes[action] || changes.play;
   const next = {
@@ -108,13 +138,15 @@ function staticAction(action) {
 
 function staticResponse(text) {
   const normalized = text.trim();
-  const action = normalized.includes("喂") || normalized.includes("吃饭")
-    ? "feed"
-    : normalized.includes("摸摸") || normalized.includes("玩耍") || normalized.includes("陪我玩")
-      ? "play"
-      : normalized.includes("冒险") || normalized.includes("出去玩")
-        ? "adventure"
-        : null;
+  let action = null;
+  if (normalized.includes("喂") || normalized.includes("吃饭")) action = "feed";
+  else if (normalized.includes("摸摸") || normalized.includes("玩耍") || normalized.includes("陪我玩")) action = "play";
+  else if (normalized.includes("冒险") || normalized.includes("出去玩")) action = "adventure";
+  else if (normalized.includes("唱歌")) action = "sing";
+  else if (normalized.includes("跳舞")) action = "dance";
+  else if (normalized.includes("梳毛")) action = "groom";
+  else if (normalized.includes("探索") || normalized.includes("散步")) action = "explore";
+  else if (normalized.includes("休息") || normalized.includes("睡觉")) action = "rest";
   if (action) return staticAction(action);
   const state = readStaticState();
   const message = normalized.includes("怎么样") || normalized.includes("状态") || normalized.includes("在干嘛")
@@ -144,11 +176,24 @@ function staticApi(path, options = {}) {
   if (path === "/personas") return Promise.resolve(staticPersonas);
   if (path === "/actions") return Promise.resolve(staticAction(body.action));
   if (path === "/respond") return Promise.resolve(staticResponse(body.text || ""));
+  if (path.startsWith("/proactive/tick")) {
+    const now = Date.now();
+    const last = Number(window.localStorage.getItem(staticProactiveKey) || 0);
+    if (now - last < 90000) return Promise.resolve({ should_trigger: false, message: "" });
+    window.localStorage.setItem(staticProactiveKey, String(now));
+    return Promise.resolve({ should_trigger: true, action: "nuzzle", message: "我刚刚看了一眼窗外，发现你还在这里。" });
+  }
   if (path.startsWith("/skills/")) {
     const kind = path.split("/").pop();
     return Promise.resolve({ path: staticArtifact(kind, body) });
   }
-  if (path === "/observe") return Promise.resolve({ should_trigger: true, action: "wave", message: "我看到你回来啦，今天也一起发光吧！" });
+  if (path === "/observe") {
+    const action = body.event_type === "smile" ? "happy" : "wave";
+    const message = action === "happy"
+      ? "你笑起来的时候，整个房间都变亮啦！"
+      : "我看到你回来啦，今天也一起发光吧！";
+    return Promise.resolve({ should_trigger: true, action, message });
+  }
   return Promise.reject(new Error("这个公开演示暂未开放该功能"));
 }
 
@@ -246,7 +291,8 @@ function triggerWorldMotion(action) {
   try {
     const groups = adapter.getMotionGroups();
     const group = groups.find((name) => name !== "Idle") ?? groups[0];
-    adapter.startMotion(group, motion.index, 3);
+    const motionCount = adapter.getMotionCount?.(group) || 1;
+    adapter.startMotion(group, motion.index % motionCount, 3);
     if (motion.expression) adapter.setExpression(motion.expression);
     stage.dataset.motionReady = "true";
     stage.dataset.motionAction = action;
@@ -306,6 +352,24 @@ async function refreshState() {
   } catch (error) {
     setConnection(false, "离线模式");
     showBubble(`我还在这里，但服务暂时没连上：${error.message}`);
+  }
+}
+
+function proactiveEnabled() {
+  const toggle = document.querySelector("#proactive-toggle");
+  return toggle ? toggle.checked : true;
+}
+
+async function pollProactive() {
+  if (!proactiveEnabled()) return;
+  try {
+    const result = await api(`/proactive/tick?pet_id=${petId}`);
+    if (!result.should_trigger) return;
+    triggerWorldMotion(result.action || "nuzzle");
+    proactiveResult.textContent = `它自己主动说：${result.message}`;
+    showResult(result.message, "presence");
+  } catch (error) {
+    proactiveResult.textContent = `主动陪伴暂时不可用：${error.message}`;
   }
 }
 
@@ -404,7 +468,10 @@ document.querySelectorAll("[data-event]").forEach((button) => {
       proactiveResult.textContent = result.should_trigger
         ? `${result.message}（动作：${result.action}）`
         : "冷却中：宠物暂时不重复打扰你。";
-      if (result.should_trigger) showResult(result.message, "presence");
+      if (result.should_trigger) {
+        triggerWorldMotion(result.action || "nuzzle");
+        showResult(result.message, "presence");
+      }
     } catch (error) {
       proactiveResult.textContent = error.message;
     } finally {
@@ -412,6 +479,18 @@ document.querySelectorAll("[data-event]").forEach((button) => {
     }
   });
 });
+
+const proactiveToggle = document.querySelector("#proactive-toggle");
+if (proactiveToggle) {
+  try {
+    proactiveToggle.checked = window.localStorage.getItem(proactiveEnabledKey) !== "false";
+  } catch {}
+  proactiveToggle.addEventListener("change", () => {
+    try {
+      window.localStorage.setItem(proactiveEnabledKey, String(proactiveToggle.checked));
+    } catch {}
+  });
+}
 
 document.querySelector("#drawer-button").addEventListener("click", () => toggleDrawer(true));
 document.querySelector("#more-button").addEventListener("click", () => toggleDrawer(true));
@@ -438,6 +517,9 @@ window.setTimeout(() => {
     document.querySelector("#stage-fallback span").textContent = "状态操作仍然可以继续使用";
   }
 }, 6500);
+if (!staticDemo && worldFrame.src === "about:blank") {
+  worldFrame.src = new URL("/", window.location.href).href;
+}
 
 api("/personas").then((personas) => {
   const sunny = personas.find((persona) => persona.persona_id === "sunny") || personas[0];
@@ -446,3 +528,5 @@ api("/personas").then((personas) => {
 
 refreshState();
 window.setInterval(refreshState, 15000);
+window.setTimeout(pollProactive, 9000);
+window.setInterval(pollProactive, 30000);

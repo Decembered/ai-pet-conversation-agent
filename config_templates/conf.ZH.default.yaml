@@ -60,7 +60,7 @@ character_config:
         # 'openai_compatible_llm', 'llama_cpp_llm', 'claude_llm', 'ollama_llm'
         # 'openai_llm', 'gemini_llm', 'zhipu_llm', 'deepseek_llm', 'groq_llm'
         # 'mistral_llm', 'lmstudio_llm' 之类的
-        llm_provider: 'ollama_llm' # 使用的 LLM 提供商
+        llm_provider: 'openai_compatible_llm'
         # 是否在第一句回应时遇上逗号就直接生成音频以减少首句延迟（默认：True）
         faster_first_response: True
         # 句子分割方法：'regex' 或 'pysbd'
@@ -105,12 +105,12 @@ character_config:
 
       # OpenAI 兼容推理后端
       openai_compatible_llm:
-        base_url: 'http://localhost:11434/v1' # 基础 URL
-        llm_api_key: 'somethingelse' # API 密钥
+        base_url: 'https://api.xiaomimimo.com/v1'
+        llm_api_key: '${MIMO_API_KEY}'
         organization_id: null # 组织 ID
         project_id: null # 项目 ID
-        model: 'qwen2.5:latest' # 使用的模型
-        temperature: 1.0 # 温度，介于 0 到 2 之间
+        model: 'mimo-v2.5'
+        temperature: 0.7 # 温度，介于 0 到 2 之间
         interrupt_method: 'user'
         # 用于表示中断信号的方法(提示词模式)。
         # 如果LLM支持在聊天记忆中的任何位置插入系统提示词，请使用'system'。
@@ -451,7 +451,7 @@ character_config:
 
   # =================== Voice Activity Detection ===================
   vad_config:
-    vad_model: null
+    vad_model: 'silero_vad'
 
     silero_vad:
       orig_sr: 16000 # 原始音频采样率

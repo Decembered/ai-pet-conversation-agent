@@ -1,10 +1,16 @@
 import os
+import shutil
+from pathlib import Path
 import numpy as np
 import sherpa_onnx
 from loguru import logger
 from .asr_interface import ASRInterface
 from .utils import download_and_extract, check_and_extract_local_file
 import onnxruntime
+
+
+SENSE_VOICE_MODEL_URL = "https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17.tar.bz2"
+SENSE_VOICE_MODEL_DIR = "sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17"
 
 
 class VoiceRecognition(ASRInterface):
@@ -163,40 +169,7 @@ class VoiceRecognition(ASRInterface):
                 provider=self.provider,
             )
         elif self.model_type == "sense_voice":
-            if not self.sense_voice or not os.path.isfile(self.sense_voice):
-                if self.sense_voice.startswith(
-                    "./models/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17"
-                ):
-                    logger.warning(
-                        "SenseVoice model not found. Downloading the model..."
-                    )
-
-                    url = "https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17.tar.bz2"
-                    output_dir = "./models"
-                    # check the local file first before download
-                    local_result = check_and_extract_local_file(url, output_dir)
-
-                    if local_result is None:
-                        logger.info("Local file not found. Downloading...")
-                        download_and_extract(url, output_dir)
-                    else:
-                        logger.info("Local file found. Using existing file.")
-                    # download_and_extract(
-                    #     url="https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17.tar.bz2",
-                    #     output_dir="./models",
-                    # )
-                else:
-                    logger.critical(
-                        "The SenseVoice model is missing. Please provide the path to the model.onnx file."
-                    )
-            recognizer = sherpa_onnx.OfflineRecognizer.from_sense_voice(
-                model=self.sense_voice,
-                tokens=self.tokens,
-                num_threads=self.num_threads,
-                use_itn=self.use_itn,
-                debug=self.debug,
-                provider=self.provider,
-            )
+            recognizer = self._create_sense_voice_recognizer()
         elif self.model_type == "fire_red_asr":
             recognizer = sherpa_onnx.OfflineRecognizer.from_fire_red_asr(
                 encoder=self.fire_red_asr_encoder,
@@ -211,6 +184,48 @@ class VoiceRecognition(ASRInterface):
             raise ValueError(f"Invalid model type: {self.model_type}")
 
         return recognizer
+
+    def _create_sense_voice_recognizer(self):
+        if not self.sense_voice or not os.path.isfile(self.sense_voice):
+            if self.sense_voice and self.sense_voice.startswith(
+                f"./models/{SENSE_VOICE_MODEL_DIR}"
+            ):
+                logger.warning("SenseVoice model not found. Downloading the model...")
+                local_result = check_and_extract_local_file(
+                    SENSE_VOICE_MODEL_URL, "./models"
+                )
+                if local_result is None:
+                    logger.info("Local file not found. Downloading...")
+                    download_and_extract(SENSE_VOICE_MODEL_URL, "./models")
+                else:
+                    logger.info("Local file found. Using existing file.")
+            else:
+                logger.critical(
+                    "The SenseVoice model is missing. Please provide the path to the model.onnx file."
+                )
+
+        try:
+            return self._build_sense_voice_recognizer()
+        except RuntimeError as error:
+            if "No graph was found in the protobuf" not in str(error):
+                raise
+            model_dir = Path(self.sense_voice).parent
+            if model_dir.name != SENSE_VOICE_MODEL_DIR:
+                raise
+            logger.warning("SenseVoice model is corrupt. Re-downloading the model...")
+            shutil.rmtree(model_dir)
+            download_and_extract(SENSE_VOICE_MODEL_URL, "./models")
+            return self._build_sense_voice_recognizer()
+
+    def _build_sense_voice_recognizer(self):
+        return sherpa_onnx.OfflineRecognizer.from_sense_voice(
+            model=self.sense_voice,
+            tokens=self.tokens,
+            num_threads=self.num_threads,
+            use_itn=self.use_itn,
+            debug=self.debug,
+            provider=self.provider,
+        )
 
     def transcribe_np(self, audio: np.ndarray) -> str:
         stream = self.recognizer.create_stream()

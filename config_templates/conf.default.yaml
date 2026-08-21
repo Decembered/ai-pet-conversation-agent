@@ -59,7 +59,7 @@ character_config:
         # 'openai_compatible_llm', 'llama_cpp_llm', 'claude_llm', 'ollama_llm'
         # 'openai_llm', 'gemini_llm', 'zhipu_llm', 'deepseek_llm', 'groq_llm'
         # 'mistral_llm', 'lmstudio_llm', and more
-        llm_provider: 'ollama_llm'
+        llm_provider: 'openai_compatible_llm'
         # let ai speak as soon as the first comma is received on the first sentence
         # to reduced latency.
         faster_first_response: True
@@ -67,7 +67,7 @@ character_config:
         segment_method: 'pysbd'
         # Use MCP (Model Context Protocol) Plus to let the LLM have the ability to use tools
         # 'Plus' means that it has the ability to call tools by using OpenAI API.
-        use_mcpp: True
+        use_mcpp: False
         mcp_enabled_servers: ["time", "ddg-search"] # Enabled MCP servers
 
       letta_agent:
@@ -106,12 +106,12 @@ character_config:
 
       # OpenAI Compatible inference backend
       openai_compatible_llm:
-        base_url: 'http://localhost:11434/v1'
-        llm_api_key: 'somethingelse'
+        base_url: 'https://api.xiaomimimo.com/v1'
+        llm_api_key: '${MIMO_API_KEY}'
         organization_id: null
         project_id: null
-        model: 'qwen2.5:latest'
-        temperature: 1.0 # value between 0 to 2
+        model: 'mimo-v2.5'
+        temperature: 0.7 # value between 0 to 2
         interrupt_method: 'user'
         # This is the method to use for prompting the interruption signal. 
         # If the provider supports inserting system prompt anywhere in the chat memory, use 'system'. 
@@ -456,7 +456,7 @@ character_config:
 
   # =================== Voice Activity Detection ===================
   vad_config:
-    vad_model: null
+    vad_model: 'silero_vad'
 
     silero_vad:
       orig_sr: 16000 # Original Audio Sample Rate

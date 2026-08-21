@@ -6,7 +6,48 @@ from open_llm_vtuber.pet.artifacts import ArtifactService
 from open_llm_vtuber.pet.memory import MemoryStore
 from open_llm_vtuber.pet.personas import build_system_prompt, get_persona, list_personas
 from open_llm_vtuber.pet.proactivity import PresenceEvent, ProactiveScheduler
-from open_llm_vtuber.pet.state import PetAction, PetWorldService
+from open_llm_vtuber.pet.state import PetAction, PetState, PetWorldService
+
+
+def test_sense_voice_corrupt_model_is_repaired(tmp_path, monkeypatch) -> None:
+    from open_llm_vtuber.asr import sherpa_onnx_asr
+
+    model_dir = tmp_path / "sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17"
+    model_dir.mkdir()
+    model_path = model_dir / "model.onnx"
+    tokens_path = model_dir / "tokens.txt"
+    model_path.write_bytes(b"corrupt")
+    tokens_path.write_text("<blk> 0\n", encoding="utf-8")
+    calls: list[dict[str, str | int | bool]] = []
+
+    class FakeRecognizer:
+        @staticmethod
+        def from_sense_voice(**kwargs):
+            calls.append(kwargs)
+            if len(calls) == 1:
+                raise RuntimeError("No graph was found in the protobuf")
+            return "ready"
+
+    monkeypatch.setattr(sherpa_onnx_asr.sherpa_onnx, "OfflineRecognizer", FakeRecognizer)
+    monkeypatch.setattr(
+        sherpa_onnx_asr,
+        "check_and_extract_local_file",
+        lambda _url, _output_dir: None,
+    )
+    monkeypatch.setattr(
+        sherpa_onnx_asr,
+        "download_and_extract",
+        lambda _url, _output_dir: model_dir,
+    )
+
+    recognizer = sherpa_onnx_asr.VoiceRecognition(
+        model_type="sense_voice",
+        sense_voice=str(model_path),
+        tokens=str(tokens_path),
+    )
+
+    assert recognizer.recognizer == "ready"
+    assert len(calls) == 2
 
 
 def test_persona_is_system_prompt_and_has_distinct_media_contract() -> None:
@@ -49,6 +90,17 @@ def test_play_intent_is_inferred_from_companion_language(tmp_path) -> None:
 
     assert service.infer_action("过来让我摸摸") is PetAction.PLAY
     assert service.infer_action("陪我玩一会儿") is PetAction.PLAY
+
+
+def test_extended_actions_change_state_and_support_text_intents(tmp_path) -> None:
+    service = PetWorldService(tmp_path / "pet.sqlite3")
+
+    singing = service.perform_action("demo", PetAction.SING)
+
+    assert singing.state.mood > 75
+    assert singing.state.experience == 12
+    assert service.infer_action("给我唱歌") is PetAction.SING
+    assert service.infer_action("我们去探索一下") is PetAction.EXPLORE
 
 
 def test_state_refresh_applies_time_decay(tmp_path) -> None:
@@ -94,4 +146,16 @@ def test_proactive_scheduler_handles_presence_with_cooldown() -> None:
 
     assert first.should_trigger is True
     assert first.action == "wave"
+    assert second.should_trigger is False
+
+
+def test_proactive_scheduler_has_state_aware_tick() -> None:
+    scheduler = ProactiveScheduler(cooldown_seconds=60)
+    state = PetState("demo", 20, 80, 100, 75, 10, 0, 1, 0, 100)
+
+    first = scheduler.evaluate_tick(state, 100.0)
+    second = scheduler.evaluate_tick(state, 120.0)
+
+    assert first.should_trigger is True
+    assert first.action == "nuzzle"
     assert second.should_trigger is False

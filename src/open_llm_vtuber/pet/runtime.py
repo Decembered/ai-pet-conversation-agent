@@ -87,6 +87,14 @@ class PetRuntime:
         )
         return self.scheduler.evaluate(event)
 
+    def proactive_tick(
+        self, pet_id: str, observed_at: float | None = None
+    ) -> ProactiveDecision:
+        state = self.world.get_state(pet_id)
+        return self.scheduler.evaluate_tick(
+            state, observed_at if observed_at is not None else time.time()
+        )
+
     def switch_persona(self, persona_id: PersonaId) -> PersonaProfile:
         """Switch the active persona package."""
         self.persona = get_persona(persona_id)
