@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="SLAI AI 宠物世界 Demo" />
+    <title>SLAI Pet World · AI 宠物世界</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="world-shell" id="world-shell" data-drawer-open="false">
+      <header class="world-topbar">
+        <a class="world-brand" href="/pet-demo/" aria-label="SLAI Pet World 首页">
+          <span class="world-brand-mark" aria-hidden="true"><span></span></span>
+          <span>SLAI / PET WORLD</span>
+        </a>
+        <div class="world-status" role="status" aria-live="polite">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span id="connection-status">连接宠物世界中</span>
+          <span class="status-divider" aria-hidden="true"></span>
+          <span id="persona-name">小太阳</span>
+          <span class="level-pill" id="level-badge">LV 1</span>
+        </div>
+        <button class="icon-button" id="drawer-button" type="button" aria-controls="control-drawer" aria-expanded="false" aria-label="打开宠物控制抽屉">
+          <span class="menu-icon" aria-hidden="true"><i></i><i></i><i></i></span>
+        </button>
+      </header>
+
+      <main class="world-main">
+        <section class="world-stage" id="world-stage" aria-labelledby="world-title">
+          <div class="stage-frame" aria-label="原始 Live2D 宠物世界">
+            <iframe id="live2d-world" src="about:blank" title="原始 Open-LLM-VTuber 宠物世界" loading="eager"></iframe>
+          </div>
+          <div class="stage-fallback" id="stage-fallback" aria-hidden="true">
+            <div class="fallback-glow"></div>
+            <svg viewBox="0 0 220 220" role="img" aria-label="宠物占位形象">
+              <defs><linearGradient id="fallback-body" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--world-accent)" /><stop offset="1" stop-color="var(--world-coral)" /></linearGradient></defs>
+              <path d="M61 80 43 36l44 23c15-7 31-7 46 0l44-23-18 44c10 13 14 29 11 47-4 31-30 53-60 53s-56-22-60-53c-3-18 1-34 11-47Z" fill="url(#fallback-body)" />
+              <circle cx="88" cy="113" r="8" fill="var(--world-deep)" /><circle cx="132" cy="113" r="8" fill="var(--world-deep)" />
+              <path d="M91 143c14 12 24 12 38 0" fill="none" stroke="var(--world-deep)" stroke-width="7" stroke-linecap="round" />
+            </svg>
+            <strong>它正在醒来……</strong>
+            <span>马上就来和你见面</span>
+          </div>
+
+          <div class="stage-scrim" aria-hidden="true"></div>
+          <div class="stage-caption">
+            <p class="world-kicker">A SMALL WORLD THAT REMEMBERS</p>
+            <h1 id="world-title">今天，它在房间里等你。</h1>
+            <p id="world-subtitle">喂它一口饭，陪它过一天。每个动作都会留下痕迹。</p>
+          </div>
+          <div class="world-bubble" id="world-bubble" role="status" aria-live="polite">你好，我已经醒啦。</div>
+          <div class="action-toast" id="action-toast" aria-live="polite"></div>
+          <div class="needs-rail" id="needs-rail" aria-label="宠物当前状态"></div>
+          <button class="wake-button" id="wake-button" type="button"><span class="wake-dot" aria-hidden="true"></span>叫它一声</button>
+        </section>
+
+        <nav class="action-dock" aria-label="宠物快捷操作">
+          <div class="dock-actions">
+            <button class="dock-action" data-action="play" type="button" aria-label="摸摸，提升心情和亲密度"><span class="dock-icon icon-touch" aria-hidden="true"></span><span>摸摸</span></button>
+            <button class="dock-action" data-action="feed" type="button" aria-label="喂食，降低饥饿"><span class="dock-icon icon-feed" aria-hidden="true"></span><span>喂食</span></button>
+            <button class="dock-action" data-action="adventure" type="button" aria-label="玩耍，和宠物一起探索"><span class="dock-icon icon-adventure" aria-hidden="true"></span><span>玩耍</span></button>
+            <button class="dock-action" id="chat-focus" type="button" aria-label="聊天，聚焦聊天输入框"><span class="dock-icon icon-chat" aria-hidden="true"></span><span>聊天</span></button>
+          </div>
+          <form class="dock-chat" id="chat-form">
+            <label class="sr-only" for="chat-input">和宠物说一句</label>
+            <input id="chat-input" autocomplete="off" placeholder="和它说一句……" />
+            <button class="send-button" type="submit" aria-label="发送消息"><span class="send-arrow" aria-hidden="true"></span></button>
+          </form>
+          <button class="dock-more" id="more-button" type="button" aria-controls="control-drawer" aria-expanded="false"><span class="more-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>更多</span></button>
+        </nav>
+      </main>
+
+      <div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
+      <aside class="control-drawer" id="control-drawer" aria-label="宠物世界控制台" aria-hidden="true">
+        <div class="drawer-handle" aria-hidden="true"></div>
+        <div class="drawer-heading">
+          <div><p class="world-kicker">PET ROOM / CONTROL</p><h2>照顾它的一天</h2></div>
+          <button class="icon-button drawer-close" id="drawer-close" type="button" aria-label="关闭控制抽屉"><span class="close-icon" aria-hidden="true"></span></button>
+        </div>
+        <section class="drawer-section state-section" aria-labelledby="state-title">
+          <div class="section-heading"><h3 id="state-title">它现在的状态</h3><strong id="growth-copy">0 XP</strong></div>
+          <div class="state-list" id="state-list" aria-live="polite"></div>
+          <div class="growth-track" aria-label="成长经验"><span id="growth-bar"></span></div>
+        </section>
+        <section class="drawer-section" aria-labelledby="action-title">
+          <div class="section-heading"><h3 id="action-title">世界动作</h3><span>会写入 SQLite</span></div>
+          <div class="drawer-action-grid">
+            <button class="drawer-action" data-action="bathe" type="button"><span class="dock-icon icon-bathe" aria-hidden="true"></span><strong>洗澡</strong><small>恢复健康</small></button>
+            <button class="drawer-action" data-action="work" type="button"><span class="dock-icon icon-work" aria-hidden="true"></span><strong>打工</strong><small>赚取经验</small></button>
+            <button class="drawer-action" data-action="feed" type="button"><span class="dock-icon icon-feed" aria-hidden="true"></span><strong>喂食</strong><small>降低饥饿</small></button>
+            <button class="drawer-action" data-action="rest" type="button"><span class="dock-icon icon-rest" aria-hidden="true"></span><strong>休息</strong><small>恢复精力</small></button>
+          </div>
+        </section>
+        <section class="drawer-section" aria-labelledby="skill-title">
+          <div class="section-heading"><h3 id="skill-title">它会创作</h3><span>本地文件</span></div>
+          <div class="skill-list">
+            <button class="skill-row" data-skill="letter" type="button"><span class="skill-icon icon-letter" aria-hidden="true"></span><span><strong>写一封信</strong><small>留下一段给主人看的话</small></span><span class="row-arrow" aria-hidden="true">↗</span></button>
+            <button class="skill-row" data-skill="drawing" type="button"><span class="skill-icon icon-drawing" aria-hidden="true"></span><span><strong>画一张画</strong><small>生成一张 SVG 宠物画作</small></span><span class="row-arrow" aria-hidden="true">↗</span></button>
+          </div>
+          <div class="artifact-result" id="artifact-result" aria-live="polite"></div>
+        </section>
+        <section class="drawer-section presence-section" aria-labelledby="presence-title">
+          <div class="section-heading"><h3 id="presence-title">它会主动回应</h3><span>隐私优先</span></div>
+          <p>这里只模拟进入和微笑事件，不上传或保存摄像头画面。</p>
+          <div class="presence-actions"><button class="tiny-button" data-event="entered" type="button">我回来了</button><button class="tiny-button" data-event="smile" type="button">我在微笑</button></div>
+          <div class="proactive-result" id="proactive-result" aria-live="polite">等待一次感知事件</div>
+        </section>
+      </aside>
+      <div class="sr-only" id="live-announcer" aria-live="polite"></div>
+    </div>
+    <script src="./app.js" defer></script>
+  </body>
+</html>
