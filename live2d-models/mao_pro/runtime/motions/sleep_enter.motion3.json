@@ -1,0 +1,31 @@
+{
+  "Version": 3,
+  "Meta": {
+    "Duration": 3.0,
+    "Fps": 30.0,
+    "FadeInTime": 0.45,
+    "FadeOutTime": 0.35,
+    "Loop": false,
+    "AreBeziersRestricted": true,
+    "CurveCount": 12,
+    "TotalSegmentCount": 40,
+    "TotalPointCount": 52,
+    "UserDataCount": 0,
+    "TotalUserDataSize": 0
+  },
+  "Curves": [
+    {"Target":"Parameter","Id":"ParamAngleX","Segments":[0,0,0,0.8,-3,0,2.2,-5,0,3.0,-5]},
+    {"Target":"Parameter","Id":"ParamAngleY","Segments":[0,0,0,0.8,-4,0,2.2,-8,0,3.0,-8]},
+    {"Target":"Parameter","Id":"ParamAngleZ","Segments":[0,0,0,0.8,-5,0,2.2,-12,0,3.0,-12]},
+    {"Target":"Parameter","Id":"ParamBodyAngleZ","Segments":[0,0,0,0.8,-3,0,2.2,-7,0,3.0,-7]},
+    {"Target":"Parameter","Id":"ParamEyeLOpen","Segments":[0,1,0,0.7,0.8,0,1.1,0.35,0,1.45,0.7,0,2.1,0,0,3.0,0]},
+    {"Target":"Parameter","Id":"ParamEyeROpen","Segments":[0,1,0,0.7,0.8,0,1.1,0.35,0,1.45,0.7,0,2.1,0,0,3.0,0]},
+    {"Target":"Parameter","Id":"ParamMouthUp","Segments":[0,0,0,0.8,0.25,0,2.2,0.15,0,3.0,0.15]},
+    {"Target":"Parameter","Id":"ParamBreath","Segments":[0,0,0,0.8,0.2,0,2.2,0.7,0,3.0,0.4]},
+    {"Target":"Parameter","Id":"ParamLeftShoulderUp","Segments":[0,0,0,0.8,-3,0,2.2,-5,0,3.0,-5]},
+    {"Target":"Parameter","Id":"ParamRightShoulderUp","Segments":[0,0,0,0.8,-3,0,2.2,-5,0,3.0,-5]},
+    {"Target":"Parameter","Id":"ParamArmLA01","Segments":[0,0,0,0.8,4,0,2.2,7,0,3.0,7]},
+    {"Target":"Parameter","Id":"ParamArmRA01","Segments":[0,0,0,0.8,4,0,2.2,7,0,3.0,7]}
+  ],
+  "UserData": []
+}

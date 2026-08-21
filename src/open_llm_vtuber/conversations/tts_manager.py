@@ -10,6 +10,7 @@ from ..agent.output_types import DisplayText, Actions
 from ..live2d_model import Live2dModel
 from ..tts.tts_interface import TTSInterface
 from ..utils.stream_audio import prepare_audio_payload
+from ..pet_speech import pet_speech_broadcaster
 from .types import WebSocketSend
 
 
@@ -106,6 +107,9 @@ class TTSTaskManager:
                 while self._next_sequence_to_send in buffered_payloads:
                     next_payload = buffered_payloads.pop(self._next_sequence_to_send)
                     await websocket_send(json.dumps(next_payload))
+                    # SLAI Pet: mirror the same filtered display text into the
+                    # head bubble stream. Never raises, never blocks.
+                    pet_speech_broadcaster.publish_display_payload(next_payload)
                     self._next_sequence_to_send += 1
 
                 self._payload_queue.task_done()

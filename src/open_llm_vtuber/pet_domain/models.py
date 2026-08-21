@@ -85,6 +85,22 @@ class PetState:
         )
 
 
+@dataclass(frozen=True, slots=True)
+class ReactionPlan:
+    """Deterministic presentation hints for a committed pet action."""
+
+    kind: str
+    animation: str
+    fallback_expression: str
+    bubble: str
+    particle: str | None = None
+    sound: str | None = None
+    duration_ms: int = 3200
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
 @dataclass(slots=True)
 class PetActionResult:
     """Auditable result returned by a state-changing pet action."""
@@ -95,6 +111,8 @@ class PetActionResult:
     request_id: str
     event_id: str
     duplicate: bool = False
+    changes: dict[str, dict[str, Any]] | None = None
+    reaction: ReactionPlan | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -104,5 +122,7 @@ class PetActionResult:
             "request_id": self.request_id,
             "event_id": self.event_id,
             "duplicate": self.duplicate,
+            "changes": self.changes or {},
+            "reaction": self.reaction.to_dict() if self.reaction else None,
             "state": self.state.to_dict(),
         }

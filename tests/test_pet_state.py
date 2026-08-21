@@ -61,6 +61,14 @@ class PetStateServiceTests(unittest.TestCase):
         self.assertGreater(result.state.mood, before.mood)
         self.assertGreater(result.state.intimacy, before.intimacy)
         self.assertEqual(reloaded.to_dict(), result.state.to_dict())
+        self.assertLess(result.changes["hunger"]["delta"], 0)
+        self.assertEqual(result.reaction.kind, "feed_success")
+        self.assertIn("小鱼干", result.reaction.bubble)
+
+        events = self.repository.list_events_after(0, "owner-1")
+        self.assertEqual(len(events), 1)
+        self.assertEqual(events[0]["event_id"], result.event_id)
+        self.assertEqual(events[0]["payload"]["reaction"]["animation"], "eat")
 
     def test_feed_request_is_idempotent(self) -> None:
         first = self.service.feed_pet(
@@ -68,6 +76,7 @@ class PetStateServiceTests(unittest.TestCase):
             food="苹果",
             request_id="same-request",
         )
+        sequence_after_first = self.repository.get_latest_event_sequence("owner-1")
         second = self.service.feed_pet(
             user_id="owner-1",
             food="苹果",
@@ -78,6 +87,11 @@ class PetStateServiceTests(unittest.TestCase):
         self.assertTrue(second.duplicate)
         self.assertEqual(first.event_id, second.event_id)
         self.assertEqual(first.state.hunger, second.state.hunger)
+        self.assertIsNone(second.reaction)
+        self.assertEqual(
+            self.repository.get_latest_event_sequence("owner-1"),
+            sequence_after_first,
+        )
 
     def test_values_are_clamped_to_public_range(self) -> None:
         state = self.service.get_pet_state("owner-1")

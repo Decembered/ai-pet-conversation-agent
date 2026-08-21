@@ -67,6 +67,36 @@
 				{
 					"File": "motions/special_03.motion3.json"
 				}
+			],
+			"Eat": [
+				{
+					"File": "motions/eat_01.motion3.json"
+				}
+			],
+			"Play": [
+				{
+					"File": "motions/play_01.motion3.json"
+				}
+			],
+			"Clean": [
+				{
+					"File": "motions/clean_01.motion3.json"
+				}
+			],
+			"Sleep": [
+				{
+					"File": "motions/sleep_enter.motion3.json"
+				}
+			],
+			"SleepIdle": [
+				{
+					"File": "motions/sleep_idle.motion3.json"
+				}
+			],
+			"Wake": [
+				{
+					"File": "motions/wake_01.motion3.json"
+				}
 			]
 		}
 	},

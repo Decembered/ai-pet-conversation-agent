@@ -71,6 +71,21 @@
   cursor: pointer;
 }
 
+.slai-pet-icon-button:hover { background: rgba(255, 255, 255, 0.16); }
+
+.slai-pet-icon-button:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.75);
+  outline-offset: 2px;
+}
+
+.slai-pet-sound-toggle {
+  font-size: 14px;
+  line-height: 1;
+  margin-right: 6px;
+}
+
+.slai-pet-sound-toggle[aria-pressed="false"] { opacity: 0.55; }
+
 .slai-pet-body { padding: 0 16px 16px; }
 
 .slai-pet-meta {
@@ -119,8 +134,222 @@
 .slai-pet-refresh { color: #fff; background: rgba(255,255,255,.1); }
 .slai-pet-feed:disabled, .slai-pet-refresh:disabled { opacity: .55; cursor: wait; }
 
+.slai-pet-care-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
+.slai-pet-care {
+  border: 1px solid rgba(255, 255, 255, .14);
+  border-radius: 12px;
+  padding: 8px 4px;
+  color: #fff;
+  background: rgba(255, 255, 255, .07);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.slai-pet-care:hover { background: rgba(255, 255, 255, .14); }
+.slai-pet-care:disabled { opacity: .55; cursor: wait; }
+.slai-pet-care:focus-visible, .slai-pet-feed:focus-visible, .slai-pet-refresh:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, .75);
+  outline-offset: 2px;
+}
+
 .slai-pet-message { min-height: 15px; margin: 9px 2px 0; color: var(--pet-panel-muted); font-size: 10px; line-height: 1.4; }
 .slai-pet-message[data-error="true"] { color: #ff9b9b; }
+
+.slai-pet-reaction-layer {
+  position: fixed;
+  z-index: 1090;
+  width: min(260px, 70vw);
+  height: 150px;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -100%);
+}
+
+.slai-pet-reaction-layer.is-visible {
+  opacity: 1;
+}
+
+/* The layer stays click-through; only the bubble itself is interactive so the
+   expand control can be used without blocking the Live2D canvas. */
+.slai-pet-head-bubble { pointer-events: auto; }
+
+.slai-pet-head-bubble {
+  position: absolute;
+  left: 50%;
+  bottom: 42px;
+  max-width: 100%;
+  padding: 11px 15px;
+  color: #3a2a24;
+  font: 700 14px/1.45 Inter, "Microsoft YaHei", system-ui, sans-serif;
+  text-align: center;
+  white-space: normal;
+  border: 1px solid rgba(255, 185, 91, 0.48);
+  border-radius: 18px 18px 18px 6px;
+  background: rgba(255, 250, 238, 0.96);
+  box-shadow: 0 12px 34px rgba(66, 38, 25, 0.22);
+  transform: translateX(-50%) scale(0.84);
+  transform-origin: 30% 100%;
+}
+
+.slai-pet-reaction-layer.is-visible .slai-pet-head-bubble {
+  animation: slai-pet-bubble-pop 3200ms both;
+}
+
+/* Speech bubbles stay up as long as the sentence needs, so they fade in and
+   hold instead of running the fixed-length reaction pop. */
+.slai-pet-reaction-layer { transition: opacity 220ms ease; }
+
+.slai-pet-reaction-layer.is-visible .slai-pet-head-bubble.is-speech {
+  animation: slai-pet-bubble-speak 240ms ease-out forwards;
+  font-weight: 600;
+  text-align: left;
+  border-color: rgba(255, 255, 255, 0.35);
+  background: rgba(252, 253, 255, 0.97);
+}
+
+.slai-pet-bubble-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.slai-pet-head-bubble.is-expanded .slai-pet-bubble-text {
+  display: block;
+  max-height: 40vh;
+  overflow-y: auto;
+}
+
+.slai-pet-bubble-expand {
+  display: block;
+  margin: 6px auto 0;
+  padding: 2px 10px;
+  border: 0;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #6b4b2f;
+  background: rgba(255, 200, 120, 0.35);
+  cursor: pointer;
+}
+
+.slai-pet-bubble-expand[hidden] { display: none; }
+
+@keyframes slai-pet-bubble-speak {
+  from { opacity: 0; transform: translateX(-50%) scale(0.9); }
+  to { opacity: 1; transform: translateX(-50%) scale(1); }
+}
+
+#slai-pet-drawer {
+  position: fixed;
+  top: 78px;
+  right: 16px;
+  z-index: 1085;
+  width: min(320px, calc(100vw - 32px));
+  max-height: min(60vh, 520px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  background: rgba(24, 27, 38, 0.92);
+  box-shadow: 0 18px 46px rgba(8, 10, 18, 0.45);
+  backdrop-filter: blur(10px);
+}
+
+#slai-pet-drawer[hidden] { display: none; }
+
+.slai-pet-drawer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 14px;
+  font-size: 13px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.slai-pet-drawer-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 10px 12px 0; }
+
+.slai-pet-drawer-tab {
+  border: 0;
+  border-radius: 10px;
+  padding: 7px 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.07);
+  cursor: pointer;
+}
+
+.slai-pet-drawer-tab[aria-selected="true"] { background: rgba(255, 210, 104, 0.28); }
+.slai-pet-drawer-tab:focus-visible { outline: 2px solid rgba(255, 255, 255, 0.75); outline-offset: 2px; }
+
+.slai-pet-drawer-sections { padding: 10px 14px 14px; overflow-y: auto; }
+.slai-pet-drawer-hint { margin: 0 0 8px; font-size: 10px; line-height: 1.5; color: var(--pet-panel-muted); }
+
+.slai-pet-speech-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+
+.slai-pet-speech-item {
+  display: grid;
+  gap: 2px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.slai-pet-speech-time { font-size: 9px; color: var(--pet-panel-muted); }
+.slai-pet-speech-text { font-size: 12px; line-height: 1.5; }
+
+.slai-pet-empty-state {
+  padding: 22px 12px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--pet-panel-muted);
+  border: 1px dashed rgba(255, 255, 255, 0.16);
+  border-radius: 12px;
+}
+
+.slai-pet-fish-particle {
+  position: absolute;
+  left: 50%;
+  bottom: 20px;
+  font-size: 20px;
+  opacity: 0;
+  filter: drop-shadow(0 5px 7px rgba(52, 43, 38, 0.2));
+  animation: slai-pet-fish-rise 1300ms var(--pet-particle-delay, 0ms) ease-out both;
+}
+
+#slai-pet-panel.is-reacting .slai-pet-orb {
+  animation: slai-pet-orb-cheer 650ms ease-in-out 2;
+}
+
+canvas.slai-pet-live2d-reacting {
+  animation: slai-pet-live2d-glow 800ms ease-in-out 3;
+}
+
+@keyframes slai-pet-bubble-pop {
+  0% { opacity: 0; transform: translateX(-50%) scale(0.72); }
+  10%, 78% { opacity: 1; transform: translateX(-50%) scale(1); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-9px) scale(0.96); }
+}
+
+@keyframes slai-pet-fish-rise {
+  0% { opacity: 0; transform: translate(-50%, 10px) scale(0.7) rotate(-12deg); }
+  18% { opacity: 1; }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--pet-particle-x)), -92px) scale(1.15) rotate(16deg); }
+}
+
+@keyframes slai-pet-orb-cheer {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  45% { transform: translateY(-5px) rotate(8deg); }
+}
+
+@keyframes slai-pet-live2d-glow {
+  0%, 100% { filter: none; }
+  50% { filter: drop-shadow(0 0 16px rgba(255, 194, 93, 0.65)); }
+}
 
 #slai-pet-panel.is-collapsed { width: 206px; }
 #slai-pet-panel.is-collapsed .slai-pet-body { display: none; }
@@ -128,4 +357,215 @@
 @media (max-width: 760px) {
   #slai-pet-panel { top: 78px; right: 12px; width: min(300px, calc(100vw - 24px)); }
   #slai-pet-panel:not(.is-collapsed) { max-height: calc(100vh - 160px); overflow-y: auto; }
+  #slai-pet-drawer {
+    top: auto;
+    bottom: 12px;
+    left: 12px;
+    right: 12px;
+    width: auto;
+    max-height: 46vh;
+  }
+  .slai-pet-reaction-layer { width: min(260px, 84vw); }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .slai-pet-reaction-layer { transition: none; }
+  .slai-pet-reaction-layer.is-visible .slai-pet-head-bubble,
+  .slai-pet-reaction-layer.is-visible .slai-pet-head-bubble.is-speech {
+    animation: none;
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+  }
+  .slai-pet-fish-particle {
+    display: none;
+  }
+  #slai-pet-panel.is-reacting .slai-pet-orb,
+  canvas.slai-pet-live2d-reacting {
+    animation: none;
+  }
+}
+
+/* --- 摄像头画中画 ------------------------------------------------------
+   只作用于我们自己创建的容器，不给页面上任意 video/canvas 加通用样式。 */
+#slai-pet-camera-pip {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1095;
+  width: 220px;
+  transform: translate(var(--pet-pip-x, 24px), var(--pet-pip-y, 96px)) scale(var(--pet-pip-scale, 1));
+  transform-origin: top left;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 16px 40px rgba(8, 10, 18, 0.42);
+  background: #10131c;
+}
+
+#slai-pet-camera-pip[hidden] { display: none; }
+#slai-pet-camera-pip.is-dragging { cursor: grabbing; }
+
+.slai-pet-pip-video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  transform: scaleX(-1);
+  background: #05070c;
+}
+
+/* 可选渐隐遮罩：边缘柔化，避免画中画看起来像一块生硬的贴片 */
+.slai-pet-pip-veil {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 45%, rgba(0, 0, 0, 0) 55%, rgba(6, 8, 14, 0.55) 100%);
+}
+
+#slai-pet-camera-pip.is-circle { width: 168px; border-radius: 50%; }
+#slai-pet-camera-pip.is-circle .slai-pet-pip-video { aspect-ratio: 1 / 1; }
+#slai-pet-camera-pip.is-circle .slai-pet-pip-controls { border-radius: 0 0 50% 50%; }
+
+/* “隐藏预览”只隐藏画面，指示灯和关闭入口必须始终可见 */
+#slai-pet-camera-pip.is-hidden { width: 190px; }
+#slai-pet-camera-pip.is-hidden .slai-pet-pip-video,
+#slai-pet-camera-pip.is-hidden .slai-pet-pip-veil { display: none; }
+
+.slai-pet-pip-badge {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px;
+  font: 700 10px/1 Inter, "Microsoft YaHei", system-ui, sans-serif;
+  color: #fff;
+  background: linear-gradient(180deg, rgba(8, 10, 18, 0.78), rgba(8, 10, 18, 0));
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+#slai-pet-camera-pip.is-hidden .slai-pet-pip-badge {
+  position: static;
+  background: rgba(8, 10, 18, 0.9);
+}
+
+.slai-pet-pip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ff5f56;
+  box-shadow: 0 0 0 0 rgba(255, 95, 86, 0.6);
+  animation: slai-pet-pip-pulse 1.8s ease-out infinite;
+}
+
+.slai-pet-pip-controls {
+  display: flex;
+  gap: 4px;
+  padding: 6px;
+  background: rgba(8, 10, 18, 0.9);
+}
+
+.slai-pet-pip-button {
+  flex: 1;
+  border: 0;
+  border-radius: 8px;
+  padding: 5px 2px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+}
+
+.slai-pet-pip-button:hover { background: rgba(255, 255, 255, 0.18); }
+.slai-pet-pip-button:focus-visible { outline: 2px solid rgba(255, 255, 255, 0.75); outline-offset: 2px; }
+.slai-pet-pip-stop { flex: 1.4; background: rgba(255, 95, 86, 0.24); }
+.slai-pet-pip-stop.is-armed { background: rgba(255, 95, 86, 0.85); }
+
+@keyframes slai-pet-pip-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(255, 95, 86, 0.55); }
+  70% { box-shadow: 0 0 0 7px rgba(255, 95, 86, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 95, 86, 0); }
+}
+
+@media (max-width: 760px) {
+  #slai-pet-camera-pip { width: 168px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slai-pet-pip-dot { animation: none; }
+}
+
+/* --- 生活节奏与动态背景 --------------------------------------------------
+   背景层挂在应用自己的背景容器里作为兄弟节点，不接管它的 <img>。 */
+#slai-pet-world-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+#slai-pet-world-bg:not(.is-hosted) {
+  position: fixed;
+  z-index: 0;
+}
+
+.slai-pet-world-layer {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background-size: cover;
+  background-position: center;
+  transition: opacity 1400ms ease;
+}
+
+.slai-pet-world-layer.is-front { opacity: 1; }
+
+.slai-pet-world-tint {
+  position: absolute;
+  inset: 0;
+  transition: background 1400ms ease;
+  mix-blend-mode: soft-light;
+}
+
+.slai-pet-world {
+  display: grid;
+  gap: 3px;
+  margin: 11px 0 2px;
+  padding: 9px 11px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.slai-pet-world-head { display: flex; align-items: center; gap: 7px; font-size: 12px; }
+
+.slai-pet-world-behavior {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  background: rgba(255, 210, 104, 0.22);
+}
+
+.slai-pet-world[data-reason="user_interaction"] .slai-pet-world-behavior { background: rgba(126, 224, 168, 0.24); }
+.slai-pet-world[data-reason="state_alert"] .slai-pet-world-behavior { background: rgba(255, 138, 116, 0.28); }
+
+.slai-pet-world[data-phase="morning"] { background: linear-gradient(120deg, rgba(255, 214, 150, 0.16), rgba(255, 255, 255, 0.04)); }
+.slai-pet-world[data-phase="day"] { background: linear-gradient(120deg, rgba(168, 214, 255, 0.16), rgba(255, 255, 255, 0.04)); }
+.slai-pet-world[data-phase="evening"] { background: linear-gradient(120deg, rgba(255, 154, 108, 0.18), rgba(255, 255, 255, 0.04)); }
+.slai-pet-world[data-phase="night"] { background: linear-gradient(120deg, rgba(110, 122, 200, 0.2), rgba(255, 255, 255, 0.04)); }
+
+.slai-pet-world-note,
+.slai-pet-world-remaining { font-size: 10px; line-height: 1.5; color: var(--pet-panel-muted); }
+
+@media (prefers-reduced-motion: reduce) {
+  .slai-pet-world-layer,
+  .slai-pet-world-tint { transition: none; }
+}
+

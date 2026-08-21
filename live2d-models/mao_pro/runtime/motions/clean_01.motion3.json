@@ -1,0 +1,38 @@
+{
+  "Version": 3,
+  "Meta": {
+    "Duration": 3.8,
+    "Fps": 30.0,
+    "FadeInTime": 0.35,
+    "FadeOutTime": 0.5,
+    "Loop": false,
+    "AreBeziersRestricted": true,
+    "CurveCount": 19,
+    "TotalSegmentCount": 93,
+    "TotalPointCount": 112,
+    "UserDataCount": 0,
+    "TotalUserDataSize": 0
+  },
+  "Curves": [
+    {"Target":"Parameter","Id":"ParamAngleZ","Segments":[0,0,0,0.55,-7,0,1.05,7,0,1.55,-7,0,2.05,7,0,2.8,-4,0,3.8,0]},
+    {"Target":"Parameter","Id":"ParamBodyAngleX","Segments":[0,0,0,0.55,-5,0,1.05,5,0,1.55,-5,0,2.05,5,0,2.8,-3,0,3.8,0]},
+    {"Target":"Parameter","Id":"ParamEyeLOpen","Segments":[0,1,0,0.35,0.35,0,0.75,0.75,0,2.7,0.75,0,3.2,0.35,0,3.8,1]},
+    {"Target":"Parameter","Id":"ParamEyeROpen","Segments":[0,1,0,0.35,0.35,0,0.75,0.75,0,2.7,0.75,0,3.2,0.35,0,3.8,1]},
+    {"Target":"Parameter","Id":"ParamEyeLSmile","Segments":[0,0,0,0.35,1,0,3.2,1,0,3.8,0]},
+    {"Target":"Parameter","Id":"ParamEyeRSmile","Segments":[0,0,0,0.35,1,0,3.2,1,0,3.8,0]},
+    {"Target":"Parameter","Id":"ParamMouthUp","Segments":[0,0,0,0.35,0.8,0,3.2,0.8,0,3.8,0]},
+    {"Target":"Parameter","Id":"ParamLeftShoulderUp","Segments":[0,0,0,0.55,7,0,1.05,2,0,1.55,7,0,2.05,2,0,2.8,6,0,3.8,0]},
+    {"Target":"Parameter","Id":"ParamRightShoulderUp","Segments":[0,0,0,0.55,2,0,1.05,7,0,1.55,2,0,2.05,7,0,2.8,3,0,3.8,0]},
+    {"Target":"Parameter","Id":"ParamArmLA01","Segments":[0,0,0,0.55,20,0,1.05,8,0,1.55,20,0,2.05,8,0,2.8,18,0,3.8,0]},
+    {"Target":"Parameter","Id":"ParamArmRA01","Segments":[0,0,0,0.55,6,0,1.05,13,0,1.55,6,0,2.05,13,0,2.8,7,0,3.8,0]},
+    {"Target":"Parameter","Id":"ParamArmLA02","Segments":[0,0,0,0.55,-15,0,1.05,5,0,1.55,-15,0,2.05,5,0,2.8,-12,0,3.8,0]},
+    {"Target":"Parameter","Id":"ParamArmRA02","Segments":[0,0,0,0.55,5,0,1.05,-15,0,1.55,5,0,2.05,-15,0,2.8,4,0,3.8,0]},
+    {"Target":"Parameter","Id":"ParamArmLA03","Segments":[0,0,0,0.55,20,0,1.05,-10,0,1.55,20,0,2.05,-10,0,2.8,18,0,3.8,0]},
+    {"Target":"Parameter","Id":"ParamArmRA03","Segments":[0,0,0,0.55,-10,0,1.05,7,0,1.55,-10,0,2.05,7,0,2.8,-8,0,3.8,0]},
+    {"Target":"Parameter","Id":"ParamHandLA","Segments":[0,0,0,0.35,-8,0,3.2,-8,0,3.8,0]},
+    {"Target":"Parameter","Id":"ParamHandRA","Segments":[0,0,0,0.35,-8,0,3.2,-8,0,3.8,0]},
+    {"Target":"Parameter","Id":"ParamAuraOn","Segments":[0,0,0,0.45,1,0,3.25,1,0,3.8,0]},
+    {"Target":"Parameter","Id":"ParamAura","Segments":[0,0,0,0.45,0,0,0.85,18,0,1.9,8,0,2.85,18,0,3.8,0]}
+  ],
+  "UserData": []
+}

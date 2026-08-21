@@ -36,5 +36,48 @@ def feed_pet(
     ).to_dict()
 
 
+@mcp.tool()
+def play_with_pet(
+    game: str = "追激光笔",
+    user_id: str = "default",
+    request_id: str | None = None,
+) -> dict:
+    """Play with the pet once: spends energy, raises mood and intimacy."""
+
+    return service.play_with_pet(
+        user_id=user_id,
+        game=game,
+        request_id=request_id,
+    ).to_dict()
+
+
+@mcp.tool()
+def clean_pet(
+    method: str = "洗澡",
+    user_id: str = "default",
+    request_id: str | None = None,
+) -> dict:
+    """Clean the pet once: raises cleanliness and slightly improves mood."""
+
+    return service.clean_pet(
+        user_id=user_id,
+        method=method,
+        request_id=request_id,
+    ).to_dict()
+
+
+@mcp.tool()
+def put_pet_to_sleep(
+    user_id: str = "default",
+    request_id: str | None = None,
+) -> dict:
+    """Put the pet to sleep so energy recovers over real elapsed time."""
+
+    return service.put_pet_to_sleep(
+        user_id=user_id,
+        request_id=request_id,
+    ).to_dict()
+
+
 if __name__ == "__main__":
     mcp.run(transport="stdio")
