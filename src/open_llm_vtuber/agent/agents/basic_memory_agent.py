@@ -20,6 +20,7 @@ from ..transformers import (
     actions_extractor,
     tts_filter,
     display_processor,
+    merge_short_sentences,
 )
 from ...config_manager import TTSPreprocessorConfig
 from ..input_types import BatchInput, TextSource
@@ -583,6 +584,7 @@ class BasicMemoryAgent(AgentInterface):
     ) -> Callable[[BatchInput], AsyncIterator[Union[SentenceOutput, Dict[str, Any]]]]:
         """Create the chat pipeline function."""
 
+        @merge_short_sentences(min_tts_chars=12)
         @tts_filter(self._tts_preprocessor_config)
         @display_processor(self._live2d_model)
         @actions_extractor(self._live2d_model)

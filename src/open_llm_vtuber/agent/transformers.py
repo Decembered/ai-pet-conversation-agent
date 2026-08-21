@@ -1,3 +1,4 @@
+import re
 from typing import AsyncIterator, Tuple, Callable, List, Union, Dict, Any
 from functools import wraps
 from .output_types import Actions, SentenceOutput, DisplayText
@@ -218,3 +219,96 @@ def tts_filter(
         return wrapper
 
     return decorator
+
+
+def merge_short_sentences(min_tts_chars: int = 12):
+    """Merge very short adjacent outputs to avoid choppy TTS playback.
+
+    TTS engines generate one audio file per ``SentenceOutput``. Responses made
+    of several short sentences therefore create several tiny files and audible
+    gaps in the browser. This transformer keeps streaming for normal sentences,
+    while combining only short neighbouring fragments into a more useful unit.
+    """
+
+    def decorator(func):
+        @wraps(func)
+        async def wrapper(*args, **kwargs):
+            pending: SentenceOutput | None = None
+
+            async for item in func(*args, **kwargs):
+                if isinstance(item, dict):
+                    if pending is not None:
+                        yield pending
+                        pending = None
+                    yield item
+                    continue
+
+                if not isinstance(item, SentenceOutput):
+                    logger.warning(
+                        f"merge_short_sentences received unexpected type: {type(item)}"
+                    )
+                    continue
+
+                # Keep silent/action-only messages independent so expressions and
+                # think-tag UI updates are not delayed or accidentally spoken.
+                if not item.tts_text.strip():
+                    if pending is not None:
+                        yield pending
+                        pending = None
+                    yield item
+                    continue
+
+                pending = (
+                    item if pending is None else _merge_sentence_outputs(pending, item)
+                )
+                if _spoken_char_count(pending.tts_text) >= min_tts_chars:
+                    yield pending
+                    pending = None
+
+            if pending is not None:
+                yield pending
+
+        return wrapper
+
+    return decorator
+
+
+def _spoken_char_count(text: str) -> int:
+    return len(re.sub(r"[\s.,!?，。！？、；：'\"』」）】]+", "", text))
+
+
+def _merge_sentence_outputs(
+    left: SentenceOutput, right: SentenceOutput
+) -> SentenceOutput:
+    display_separator = _text_separator(left.display_text.text, right.display_text.text)
+    tts_separator = _text_separator(left.tts_text, right.tts_text)
+    return SentenceOutput(
+        display_text=DisplayText(
+            text=f"{left.display_text.text}{display_separator}{right.display_text.text}",
+            name=left.display_text.name,
+            avatar=left.display_text.avatar,
+        ),
+        tts_text=f"{left.tts_text}{tts_separator}{right.tts_text}",
+        actions=_merge_actions(left.actions, right.actions),
+    )
+
+
+def _text_separator(left: str, right: str) -> str:
+    if not left or not right or left[-1].isspace() or right[0].isspace():
+        return ""
+    return " " if left[-1].isascii() and right[0].isascii() else ""
+
+
+def _merge_actions(left: Actions, right: Actions) -> Actions:
+    def combine(first, second):
+        if not first:
+            return second
+        if not second:
+            return first
+        return list(dict.fromkeys([*first, *second]))
+
+    return Actions(
+        expressions=combine(left.expressions, right.expressions),
+        pictures=combine(left.pictures, right.pictures),
+        sounds=combine(left.sounds, right.sounds),
+    )

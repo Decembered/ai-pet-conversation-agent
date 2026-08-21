@@ -6,6 +6,7 @@ from ..transformers import (
     actions_extractor,
     tts_filter,
     display_processor,
+    merge_short_sentences,
 )
 from ...config_manager import TTSPreprocessorConfig
 from ..input_types import BatchInput, TextSource
@@ -38,14 +39,16 @@ class LettaAgent(AgentInterface):
         self._segment_method = segment_method
 
         # Delay decorator application
-        self.chat = tts_filter(self._tts_preprocessor_config)(
-            display_processor(self._live2d_model)(
-                actions_extractor(self._live2d_model)(
-                    sentence_divider(
-                        faster_first_response=self._faster_first_response,
-                        segment_method=self._segment_method,
-                        valid_tags=["think"],
-                    )(self.chat)
+        self.chat = merge_short_sentences(min_tts_chars=12)(
+            tts_filter(self._tts_preprocessor_config)(
+                display_processor(self._live2d_model)(
+                    actions_extractor(self._live2d_model)(
+                        sentence_divider(
+                            faster_first_response=self._faster_first_response,
+                            segment_method=self._segment_method,
+                            valid_tags=["think"],
+                        )(self.chat)
+                    )
                 )
             )
         )
