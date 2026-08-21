@@ -1,4 +1,5 @@
 import json
+import re
 import chardet
 from loguru import logger
 
@@ -191,4 +192,6 @@ class Live2dModel:
                 end_index = start_index + len(lower_key)
                 target_str = target_str[:start_index] + target_str[end_index:]
                 lower_str = lower_str[:start_index] + lower_str[end_index:]
-        return target_str
+        # Removing an inline tag can leave doubled spaces. Keep line breaks, but
+        # normalize horizontal whitespace so subtitles and chat bubbles look natural.
+        return re.sub(r"[ \t]{2,}", " ", target_str).strip()

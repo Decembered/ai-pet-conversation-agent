@@ -397,6 +397,14 @@ class WebSocketHandler:
         """Handle request for chat history list"""
         context = self.client_contexts[client_uid]
         histories = get_history_list(context.character_config.conf_uid)
+        for history in histories:
+            latest_message = history.get("latest_message")
+            if latest_message and latest_message.get("role") == "ai":
+                latest_message["content"] = (
+                    context.live2d_model.remove_emotion_keywords(
+                        latest_message.get("content", "")
+                    )
+                )
         await websocket.send_text(
             json.dumps({"type": "history-list", "histories": histories})
         )
@@ -425,6 +433,11 @@ class WebSocketHandler:
             )
             if msg["role"] != "system"
         ]
+        for message in messages:
+            if message.get("role") == "ai":
+                message["content"] = context.live2d_model.remove_emotion_keywords(
+                    message.get("content", "")
+                )
         await websocket.send_text(
             json.dumps({"type": "history-data", "messages": messages})
         )
