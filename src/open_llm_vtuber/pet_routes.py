@@ -20,13 +20,32 @@ def _profile_from_config(config: Config) -> dict[str, object]:
     tts_name = character.tts_config.tts_model
     tts_settings = getattr(character.tts_config, tts_name, None)
     voice = getattr(tts_settings, "voice", "") if tts_settings else ""
+    agent_config = getattr(character, "agent_config", None)
+    basic_config = (
+        getattr(
+            getattr(agent_config, "agent_settings", None), "basic_memory_agent", None
+        )
+        if agent_config
+        else None
+    )
+    provider = getattr(basic_config, "llm_provider", "")
+    model_config = (
+        getattr(getattr(agent_config, "llm_configs", None), provider, None)
+        if provider
+        else None
+    )
+    model = getattr(model_config, "model", "")
+    capabilities = ["真实状态", "自主工具调用", "成长记录"]
+    if getattr(model_config, "supports_vision", False):
+        capabilities.append("视觉感知")
     return {
         "name": character.character_name,
         "persona": character.conf_name,
         "live2d_model": character.live2d_model_name,
         "voice": voice,
+        "model": model,
         "catchphrase": "今天也要闪闪发光！",
-        "capabilities": ["真实状态", "自主工具调用", "成长记录"],
+        "capabilities": capabilities,
     }
 
 

@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 import asyncio
+import base64
+import mimetypes
+from pathlib import Path
 
 from open_llm_vtuber.agent.stateless_llm_factory import LLMFactory
 from open_llm_vtuber.config_manager import read_yaml, validate_config
@@ -17,6 +20,9 @@ async def main() -> None:
         basic_config.llm_provider,
         **llm_config.model_dump(),
     )
+    image_path = Path("avatars/mao.png")
+    image_mime = mimetypes.guess_type(image_path.name)[0] or "image/png"
+    image_data = base64.b64encode(image_path.read_bytes()).decode("ascii")
     messages = [
         {
             "role": "user",
@@ -24,7 +30,10 @@ async def main() -> None:
                 {"type": "text", "text": "Reply with exactly: API connected"},
                 {
                     "type": "image_url",
-                    "image_url": {"url": "data:image/png;base64,AA=="},
+                    "image_url": {
+                        "url": f"data:{image_mime};base64,{image_data}",
+                        "detail": "low",
+                    },
                 },
             ],
         }
@@ -38,7 +47,7 @@ async def main() -> None:
         {
             "stepfun_ok": bool(response)
             and not response.startswith("Error calling the chat endpoint"),
-            "image_was_filtered": not llm.supports_vision,
+            "vision_enabled": llm.supports_vision,
             "response_chars": len(response),
         }
     )
