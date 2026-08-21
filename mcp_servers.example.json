@@ -1,0 +1,17 @@
+{
+  "mcp_servers": {
+    "pet-state": {
+      "command": "uv",
+      "args": ["run", "python", "scripts/pet_mcp_server.py"],
+      "cwd": "."
+    },
+    "time": {
+      "command": "uvx",
+      "args": ["mcp-server-time", "--local-timezone=Asia/Shanghai"]
+    },
+    "ddg-search": {
+      "command": "uvx",
+      "args": ["duckduckgo-mcp-server"]
+    }
+  }
+}
