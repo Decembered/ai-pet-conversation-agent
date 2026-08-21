@@ -30,6 +30,7 @@ class AsyncLLM(StatelessLLMInterface):
         organization_id: str = "z",
         project_id: str = "z",
         temperature: float = 1.0,
+        supports_vision: bool = True,
     ):
         """
         Initializes an instance of the `AsyncLLM` class.
@@ -45,6 +46,7 @@ class AsyncLLM(StatelessLLMInterface):
         self.base_url = base_url
         self.model = model
         self.temperature = temperature
+        self.supports_vision = supports_vision
         self.client = AsyncOpenAI(
             base_url=base_url,
             organization=organization_id,
@@ -54,8 +56,61 @@ class AsyncLLM(StatelessLLMInterface):
         self.support_tools = True
 
         logger.info(
-            f"Initialized AsyncLLM with the parameters: {self.base_url}, {self.model}"
+            "Initialized AsyncLLM: base_url={}, model={}, supports_vision={}",
+            self.base_url,
+            self.model,
+            self.supports_vision,
         )
+
+    @staticmethod
+    def _without_images(messages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Return an OpenAI-compatible message list containing text only.
+
+        Screen and camera sharing add ``image_url`` parts to user messages. Some
+        otherwise capable chat/tool models (including StepFun text models) reject
+        the whole request when an image part is present. Keep all message metadata
+        and textual content while dropping only unsupported visual parts.
+        """
+
+        sanitized: List[Dict[str, Any]] = []
+        for message in messages:
+            copied = dict(message)
+            content = copied.get("content")
+            if isinstance(content, list):
+                text_parts: List[str] = []
+                for part in content:
+                    if isinstance(part, str):
+                        text_parts.append(part)
+                    elif isinstance(part, dict) and part.get("type") == "text":
+                        text = part.get("text")
+                        if text:
+                            text_parts.append(str(text))
+                copied["content"] = "\n".join(text_parts).strip()
+            sanitized.append(copied)
+        return sanitized
+
+    @staticmethod
+    def _message_summary(messages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Build a log-safe summary without prompts, images, or user content."""
+
+        summary: List[Dict[str, Any]] = []
+        for message in messages:
+            content = message.get("content")
+            if isinstance(content, list):
+                content_types = [
+                    part.get("type", "unknown") if isinstance(part, dict) else "text"
+                    for part in content
+                ]
+            else:
+                content_types = [type(content).__name__]
+            summary.append(
+                {
+                    "role": message.get("role"),
+                    "content_types": content_types,
+                    "has_tool_calls": bool(message.get("tool_calls")),
+                }
+            )
+        return summary
 
     async def chat_completion(
         self,
@@ -93,7 +148,11 @@ class AsyncLLM(StatelessLLMInterface):
                     {"role": "system", "content": system},
                     *messages,
                 ]
-            logger.debug(f"Messages: {messages_with_system}")
+            if not self.supports_vision:
+                messages_with_system = self._without_images(messages_with_system)
+            logger.debug(
+                "Message summary: {}", self._message_summary(messages_with_system)
+            )
 
             available_tools = tools if self.support_tools else NOT_GIVEN
 
@@ -224,7 +283,7 @@ class AsyncLLM(StatelessLLMInterface):
             logger.error(f"LLM API: Error occurred: {e}")
             logger.info(f"Base URL: {self.base_url}")
             logger.info(f"Model: {self.model}")
-            logger.info(f"Messages: {messages}")
+            logger.info("Message summary: {}", self._message_summary(messages))
             logger.info(f"temperature: {self.temperature}")
             yield "Error calling the chat endpoint: Error occurred while generating response. See the logs for details."
 

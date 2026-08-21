@@ -112,6 +112,7 @@ character_config:
         organization_id: null # 组织 ID
         project_id: null # 项目 ID
         model: 'qwen2.5:latest' # 使用的模型
+        supports_vision: false # 文本模型设为 false；视觉模型设为 true
         temperature: 1.0 # 温度，介于 0 到 2 之间
         interrupt_method: 'user'
         # 用于表示中断信号的方法(提示词模式)。

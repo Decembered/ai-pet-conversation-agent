@@ -114,6 +114,7 @@ character_config:
         organization_id: null
         project_id: null
         model: 'qwen2.5:latest'
+        supports_vision: false # false for text-only models; true for vision models
         temperature: 1.0 # value between 0 to 2
         interrupt_method: 'user'
         # This is the method to use for prompting the interruption signal. 

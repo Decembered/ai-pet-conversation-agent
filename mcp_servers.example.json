@@ -3,6 +3,7 @@
     "pet-state": {
       "command": "uv",
       "args": ["run", "python", "scripts/pet_mcp_server.py"],
+      "env": {"PYTHONPATH": "src"},
       "cwd": "."
     },
     "time": {

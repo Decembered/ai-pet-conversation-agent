@@ -64,6 +64,7 @@ class OpenAICompatibleConfig(StatelessLLMBaseConfig):
     organization_id: str | None = Field(None, alias="organization_id")
     project_id: str | None = Field(None, alias="project_id")
     temperature: float = Field(1.0, alias="temperature")
+    supports_vision: bool = Field(True, alias="supports_vision")
 
     _OPENAI_COMPATIBLE_DESCRIPTIONS: ClassVar[dict[str, Description]] = {
         "base_url": Description(en="Base URL for the API endpoint", zh="API的URL端点"),
@@ -78,6 +79,10 @@ class OpenAICompatibleConfig(StatelessLLMBaseConfig):
         "temperature": Description(
             en="What sampling temperature to use, between 0 and 2.",
             zh="使用的采样温度，介于 0 和 2 之间。",
+        ),
+        "supports_vision": Description(
+            en="Whether the selected model accepts image input.",
+            zh="所选模型是否支持图片输入。文本模型请设为 false。",
         ),
     }
 

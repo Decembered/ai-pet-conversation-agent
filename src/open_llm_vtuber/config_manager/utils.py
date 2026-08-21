@@ -69,8 +69,9 @@ def validate_config(config_data: dict) -> Config:
         return Config(**config_data)
     except ValidationError as e:
         logger.critical(f"Error validating configuration: {e}")
-        logger.error("Configuration data:")
-        logger.error(config_data)
+        logger.error(
+            "Configuration validation failed; raw configuration omitted to protect secrets."
+        )
         raise e
 
 
